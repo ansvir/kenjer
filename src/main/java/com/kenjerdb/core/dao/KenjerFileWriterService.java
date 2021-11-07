@@ -84,7 +84,7 @@ public class KenjerFileWriterService {
         }
     }
 
-    public boolean append(File updatable, String insertable) {
+    public boolean plainAppend(File updatable, String insertable) {
         try (FileWriter fileWriter = new FileWriter(updatable)) {
             fileWriter.append(insertable);
             return true;
@@ -94,8 +94,10 @@ public class KenjerFileWriterService {
         }
     }
 
-    public boolean createFile(String path, boolean overwrite) throws IOException {
-        try (Writer fileWriter = new FileWriter(path, overwrite)) {}
+    public boolean createFile(String path, String delimiter, boolean overwrite) throws IOException {
+        try (Writer fileWriter = new FileWriter(path, overwrite)) {
+            fileWriter.append(delimiter);
+        }
         return true;
     }
 

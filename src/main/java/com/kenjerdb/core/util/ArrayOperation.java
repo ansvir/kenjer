@@ -4,8 +4,8 @@ public class ArrayOperation {
 
     /**
      * Shift array left for one element and add symbol to the end of the array
-     * @param delimiterCharSeq
-     * @param addable
+     * @param delimiterCharSeq char array the char to be added
+     * @param addable addable char
      * @return shifted array
      */
     public static char[] shiftLeft(char[] delimiterCharSeq, char addable) {

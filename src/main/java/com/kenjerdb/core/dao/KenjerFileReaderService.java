@@ -7,22 +7,23 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import static com.kenjerdb.core.dao.model.DatabaseFieldsType.DELIMITER;
 import static com.kenjerdb.core.util.ArrayOperation.shiftLeft;
 
 public class KenjerFileReaderService implements FileDatabaseReader {
 
-    public KenjerFileReaderService() {}
+    public KenjerFileReaderService() {
+    }
 
     /**
      * Get String limited by two delimiters from the start
      * and from the end on the certain position (index) in the file
-     * @param readable file to be read
-     * @param index position of the record in the file
+     *
+     * @param readable  file to be read
+     * @param index     position of the record in the file
      * @param delimiter file records delimiter
      * @return String concluded in two record delimiters
      */
-    public String recordByIndex(File readable, String delimiter, int index) {
+    public String recordByIndex(File readable, String delimiter, Long index) {
 
         StringBuilder result;
 
@@ -30,7 +31,6 @@ public class KenjerFileReaderService implements FileDatabaseReader {
             int code;
             int delimiterLength = delimiter.length();
             char symbol;
-            int indexCounter = 0;
 
             if (readable.length() < delimiterLength) {
                 throw new FileCorruptedException();
@@ -41,7 +41,6 @@ public class KenjerFileReaderService implements FileDatabaseReader {
             do {
                 code = reader.read();
                 symbol = (char) code;
-
                 shiftLeft(delimiterCharSeq, symbol);
                 StringBuilder stringBuilder = new StringBuilder();
                 for (char c : delimiterCharSeq) {
@@ -49,7 +48,17 @@ public class KenjerFileReaderService implements FileDatabaseReader {
                 }
 
                 if (stringBuilder.toString().equals(delimiter)) {
-                    if (indexCounter++ == index) {
+                    StringBuilder rowIndexString = new StringBuilder();
+                    char symbolAfterDelimiter;
+                    code = reader.read();
+                    do {
+                        symbolAfterDelimiter = (char) code;
+                        rowIndexString.append(symbolAfterDelimiter);
+                        code = reader.read();
+                        shiftLeft(delimiterCharSeq, symbol);
+                    } while (code != -1 && code != 32);
+                    Long rowIndex = Long.parseLong(rowIndexString.toString());
+                    if (rowIndex.equals(index)) {
                         result = new StringBuilder();
                         do {
                             code = reader.read();
@@ -67,7 +76,7 @@ public class KenjerFileReaderService implements FileDatabaseReader {
                     }
                 }
             } while (code != -1);
-        throw new IndexIncorrectException("Cannot find record by specified index");
+            throw new IndexIncorrectException("Cannot find record by specified index");
         } catch (IOException | FileCorruptedException | IndexIncorrectException e) {
             e.printStackTrace();
             return null;
@@ -76,11 +85,12 @@ public class KenjerFileReaderService implements FileDatabaseReader {
 
     /**
      * Read all content of a file
+     *
      * @return read content
      */
     public String readAll(File readable) {
         StringBuilder result;
-        try(FileReader reader = new FileReader(readable)) {
+        try (FileReader reader = new FileReader(readable)) {
             result = new StringBuilder();
             int code = -1;
             do {

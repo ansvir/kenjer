@@ -1,1 +1,1 @@
-[-||-]I'm the very, very good developer[-||-]There was a delimiter[-||-]There was an another delimiter[-||-]Next line to be scanned[-||-]I WAS SCANNED, THANK YOU![-||-]No, I'm not gonna be scanned[-||-]And me.
+[-||-]0 I'm the very, very good developer[-||-]1 There was a delimiter[-||-]2 There was an another delimiter[-||-]3 Next line to be scanned[-||-]4 I WAS SCANNED, THANK YOU![-||-]5 No, I'm not gonna be scanned[-||-]6 And me.

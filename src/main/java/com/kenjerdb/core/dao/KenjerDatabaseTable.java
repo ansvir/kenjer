@@ -7,6 +7,7 @@ import java.io.File;
 import static com.kenjerdb.core.constant.KenjerDatabaseConstant.EXT;
 import static com.kenjerdb.core.constant.KenjerDatabaseConstant.TABLES_PATH;
 import static com.kenjerdb.core.dao.model.DatabaseFieldsType.INDEX;
+import static com.kenjerdb.core.util.Parser.parseIntToLong;
 
 class KenjerDatabaseTable extends KenjerDatabase {
 
@@ -36,7 +37,7 @@ class KenjerDatabaseTable extends KenjerDatabase {
                     name = "table" + new KenjerFileReaderService().recordByIndex(
                             KenjerDatabaseTable.this.getDatabase(),
                             KenjerDatabaseTable.this.getDelimiter(),
-                            INDEX.ordinal());
+                            parseIntToLong(INDEX.ordinal()));
             }
 
             return new KenjerDatabaseTable(name);
