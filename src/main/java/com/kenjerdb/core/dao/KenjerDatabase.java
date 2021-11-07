@@ -1,14 +1,16 @@
 package com.kenjerdb.core.dao;
 
-import com.kenjerdb.core.dao.model.DatabaseFieldsType;
 import com.kenjerdb.core.dao.model.PersistencePeriodType;
 import com.kenjerdb.core.exception.DatabaseCreationException;
+import com.kenjerdb.core.exception.ValidationException;
 
 import java.io.File;
 import java.io.IOException;
 
 import static com.kenjerdb.core.constant.KenjerDatabaseConstant.*;
+import static com.kenjerdb.core.dao.model.DatabaseFieldsType.*;
 import static com.kenjerdb.core.dao.model.PersistencePeriodType.IMMEDIATE;
+import static com.kenjerdb.core.util.DelimiterCipher.encryptDelimiter;
 
 public class KenjerDatabase implements FileDatabase {
 
@@ -54,27 +56,29 @@ public class KenjerDatabase implements FileDatabase {
             String delimiter,
             String placeholderStart,
             String placeholderEnd
-    ) throws DatabaseCreationException {
+    ) throws DatabaseCreationException, ValidationException {
         this.name = name;
         this.rootDirectory = rootDirectory + "/" + PROJECT_NAME.value() + "/" + name + "/";
         this.database = new File(this.rootDirectory + name + EXT.value());
+        KenjerFileWriterService fileWriterService = new KenjerFileWriterService();
         try {
-            if (!this.database.createNewFile()) {
-                throw new DatabaseCreationException("File wasn't created according to some reason");
-            }
-        } catch (IOException | DatabaseCreationException e) {
-            throw new DatabaseCreationException(e.getMessage());
+            fileWriterService.createDirectory(this.rootDirectory);
+            fileWriterService.createFile(database.getAbsolutePath(), true);
+        } catch (IOException e) {
+            throw new DatabaseCreationException("Database file cannot be created");
         }
         this.period = period;
         this.delimiter = delimiter;
         this.placeholderStart = placeholderStart;
         this.placeholderEnd = placeholderEnd;
         KenjerDatabaseService service = new KenjerDatabaseService(this);
-        service.write(DatabaseFieldsType.TABLES, "");
-        service.write(DatabaseFieldsType.PERSISTENCE_PERIOD, period.name());
-        service.write(DatabaseFieldsType.INDEX, String.valueOf(0));
-        service.write(DatabaseFieldsType.PLACEHOLDER_OPEN, placeholderStart);
-        service.write(DatabaseFieldsType.PLACEHOLDER_CLOSE, placeholderEnd);
+        fileWriterService.append(this.database, this.delimiter);
+        service.write(TABLES, "");
+        service.write(PERSISTENCE_PERIOD, period.name());
+        service.write(INDEX, String.valueOf(0));
+        service.write(DELIMITER, encryptDelimiter(this.delimiter));
+        service.write(PLACEHOLDER_OPEN, placeholderStart);
+        service.write(PLACEHOLDER_CLOSE, placeholderEnd);
     }
 
     protected KenjerDatabase() {
@@ -120,7 +124,7 @@ public class KenjerDatabase implements FileDatabase {
             return this;
         }
 
-        public KenjerDatabase build() throws DatabaseCreationException {
+        public KenjerDatabase build() throws DatabaseCreationException, ValidationException {
             if (name == null) {
                 name = "example";
             }
@@ -156,12 +160,12 @@ public class KenjerDatabase implements FileDatabase {
         }
     }
 
-    public static KenjerDatabase getDefaultDatabase() throws DatabaseCreationException {
-        return getDefaultPreConfiguredDatabase()
+    public static KenjerDatabase getDefaultDatabase() throws DatabaseCreationException, ValidationException {
+        return getDefaultConfig()
                 .build();
     }
 
-    public static Builder getDefaultPreConfiguredDatabase() {
+    public static Builder getDefaultConfig() {
         return new Builder()
                 .name("example")
                 .period(IMMEDIATE)
@@ -169,6 +173,10 @@ public class KenjerDatabase implements FileDatabase {
                 .delimiter(DEFAULT_RECORD_DELIMITER.value())
                 .placeholderStart(DEFAULT_PLACEHOLDER_DELIMITER_OPEN.value())
                 .placeholderEnd(DEFAULT_PLACEHOLDER_DELIMITER_CLOSE.value());
+    }
+
+    public static KenjerDatabase open(String path) {
+        return null;
     }
 
     @Override
@@ -192,7 +200,9 @@ public class KenjerDatabase implements FileDatabase {
     }
 
     @Override
-    public String getDelimiter() { return this.delimiter;}
+    public String getDelimiter() {
+        return this.delimiter;
+    }
 
     @Override
     public String getPlaceholderStart() {
@@ -202,5 +212,18 @@ public class KenjerDatabase implements FileDatabase {
     @Override
     public String getPlaceholderEnd() {
         return placeholderEnd;
+    }
+
+    @Override
+    public String toString() {
+        return "KenjerDatabase{" +
+                "name='" + name + '\'' +
+                ", database=" + database +
+                ", rootDirectory='" + rootDirectory + '\'' +
+                ", period=" + period +
+                ", delimiter='" + delimiter + '\'' +
+                ", placeholderStart='" + placeholderStart + '\'' +
+                ", placeholderEnd='" + placeholderEnd + '\'' +
+                '}';
     }
 }

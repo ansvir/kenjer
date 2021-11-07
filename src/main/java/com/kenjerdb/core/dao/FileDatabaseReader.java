@@ -1,8 +1,11 @@
 package com.kenjerdb.core.dao;
 
-public interface FileDatabaseReader {
-    String recordByIndex(int index);
+import java.io.File;
 
-    String readAll();
+public interface FileDatabaseReader {
+
+    String recordByIndex(File readable, String delimiter, int index);
+
+    String readAll(File readable);
 }
 

@@ -2,6 +2,7 @@ package com.kenjdb.core.dao;
 
 import com.kenjerdb.core.dao.KenjerDatabase;
 import com.kenjerdb.core.exception.DatabaseCreationException;
+import com.kenjerdb.core.exception.ValidationException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.fail;
@@ -13,10 +14,11 @@ public class KenjerDatabaseTest {
         KenjerDatabase database = null;
         try {
             database = KenjerDatabase
-                    .getDefaultPreConfiguredDatabase()
+                    .getDefaultConfig()
                     .name("company")
+                    .directory("/home/anton/Documents/testdb")
                     .build();
-        } catch (DatabaseCreationException e) {
+        } catch (DatabaseCreationException | ValidationException e) {
             e.printStackTrace();
             fail();
         }

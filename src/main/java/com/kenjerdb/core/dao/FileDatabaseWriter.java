@@ -1,4 +1,4 @@
 package com.kenjerdb.core.dao;
 
-public class FileDatabaseWriter {
+public interface FileDatabaseWriter {
 }

@@ -1,1 +1,0 @@
-id INT PK[-||-]name TEXT[-||-]surname TEXT[-||-]account_id INT FK[-||-]phone_number TEXT

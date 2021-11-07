@@ -6,7 +6,6 @@ public enum KenjerDatabaseConstant {
     TABLES_PATH("tables"),
     EXT(".txt"),
     CIPHER_SIGN("1"),
-    CONFIG_FILE_NAME("config"),
     DEFAULT_RECORD_DELIMITER("[-||-]"),
     DEFAULT_PLACEHOLDER_DELIMITER_OPEN("<{"),
     DEFAULT_PLACEHOLDER_DELIMITER_CLOSE("}>");

@@ -12,32 +12,27 @@ import static com.kenjerdb.core.util.ArrayOperation.shiftLeft;
 
 public class KenjerFileReaderService implements FileDatabaseReader {
 
-    private final File READABLE;
-    private final KenjerDatabase DATABASE;
-
-    public KenjerFileReaderService(File readable, KenjerDatabase database) {
-        this.READABLE = readable;
-        this.DATABASE = database;
-    }
+    public KenjerFileReaderService() {}
 
     /**
      * Get String limited by two delimiters from the start
      * and from the end on the certain position (index) in the file
+     * @param readable file to be read
      * @param index position of the record in the file
+     * @param delimiter file records delimiter
      * @return String concluded in two record delimiters
      */
-    public synchronized String recordByIndex(int index) {
+    public String recordByIndex(File readable, String delimiter, int index) {
+
         StringBuilder result;
-        try (FileReader reader = new FileReader(READABLE)) {
 
+        try (FileReader reader = new FileReader(readable.getAbsoluteFile())) {
             int code;
-
-            String delimiter = DATABASE.getDelimiter();
             int delimiterLength = delimiter.length();
             char symbol;
-            int indexCounter = 1;
+            int indexCounter = 0;
 
-            if (DATABASE.getDelimiter().length() < delimiterLength) {
+            if (readable.length() < delimiterLength) {
                 throw new FileCorruptedException();
             }
 
@@ -83,9 +78,9 @@ public class KenjerFileReaderService implements FileDatabaseReader {
      * Read all content of a file
      * @return read content
      */
-    public String readAll() {
+    public String readAll(File readable) {
         StringBuilder result;
-        try(FileReader reader = new FileReader(READABLE)) {
+        try(FileReader reader = new FileReader(readable)) {
             result = new StringBuilder();
             int code = -1;
             do {

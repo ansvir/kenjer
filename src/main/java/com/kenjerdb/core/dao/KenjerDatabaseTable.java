@@ -33,10 +33,10 @@ class KenjerDatabaseTable extends KenjerDatabase {
 
         public KenjerDatabaseTable build() throws TableCreationException {
             if (name == null) {
-                    name = "table" + new KenjerFileReaderService(
+                    name = "table" + new KenjerFileReaderService().recordByIndex(
                             KenjerDatabaseTable.this.getDatabase(),
-                            KenjerDatabaseTable.this
-                    ).recordByIndex(INDEX.ordinal());
+                            KenjerDatabaseTable.this.getDelimiter(),
+                            INDEX.ordinal());
             }
 
             return new KenjerDatabaseTable(name);

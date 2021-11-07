@@ -7,38 +7,29 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
-import static com.kenjerdb.core.constant.KenjerDatabaseConstant.CIPHER_SIGN;
-import static com.kenjerdb.core.dao.model.DatabaseFieldsType.DELIMITER;
 import static com.kenjerdb.core.util.ArrayOperation.shiftLeft;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class KenjerFileWriterService {
 
-    private final File UPDATABLE;
-    private final KenjerDatabase DATABASE;
+    public KenjerFileWriterService() {}
 
-    public KenjerFileWriterService(File updatable, KenjerDatabase database) {
-        this.UPDATABLE = updatable;
-        this.DATABASE = database;
-    }
-
-    public boolean updateByIndex(int index, String updatable) {
+    public boolean updateByIndex(File updatable, String replaceable, String delimiter, int index) {
         StringBuilder foundString;
-        try (FileReader reader = new FileReader(UPDATABLE)) {
-            int indexPosition = 0;
-            int code;
-            String recordDelimiter = DATABASE.getDelimiter();
-            int delimiterLength = recordDelimiter.length();
-            char symbol;
-            int indexCounter = 1;
-            if (UPDATABLE.length() < delimiterLength) {
+        try (FileReader reader = new FileReader(updatable)) {
+            int delimiterLength = delimiter.length();
+            if (updatable.length() < delimiter.length()) {
                 throw new FileCorruptedException();
             }
+            int indexPosition = 0;
+            int code;
+            char symbol;
+            int indexCounter = 0;
 
             char[] delimiterCharSeq = new char[delimiterLength];
 
             for (int i = 0; i < delimiterLength; i++) {
-                delimiterCharSeq[i] = recordDelimiter.charAt(i);
+                delimiterCharSeq[i] = delimiter.charAt(i);
             }
 
             do {
@@ -46,14 +37,15 @@ public class KenjerFileWriterService {
                 symbol = (char) code;
                 indexPosition++;
 
-                shiftLeft(delimiterCharSeq, symbol);
+
                 StringBuilder delimiterStringStart = new StringBuilder();
                 for (char c : delimiterCharSeq) {
                     delimiterStringStart.append(c);
                 }
+                shiftLeft(delimiterCharSeq, symbol);
                 System.out.println(delimiterStringStart);
-                System.out.println(recordDelimiter);;
-                if (delimiterStringStart.toString().equals(recordDelimiter)) {
+                System.out.println(delimiter);
+                if (delimiterStringStart.toString().equals(delimiter)) {
                     System.out.println("ENTER2");
                     if (indexCounter++ == index) {
                         foundString = new StringBuilder();
@@ -62,23 +54,22 @@ public class KenjerFileWriterService {
                             code = reader.read();
                             symbol = (char) code;
                             foundString.append(symbol);
-                            shiftLeft(delimiterCharSeq, symbol);
                             StringBuilder delimiterStringEnd = new StringBuilder();
                             for (char c : delimiterCharSeq) {
                                 delimiterStringEnd.append(c);
                             }
+                            shiftLeft(delimiterCharSeq, symbol);
                             System.out.println(foundString);
-                            if (delimiterStringEnd.toString().equals(recordDelimiter)) {
+                            if (delimiterStringEnd.toString().equals(delimiter)) {
                                 System.out.println("ENTER4");
-                                try(RandomAccessFile raf = new RandomAccessFile(UPDATABLE, "rw");
+                                try(RandomAccessFile raf = new RandomAccessFile(updatable, "rw");
                                     FileChannel fileChannel = raf.getChannel()
                                 ) {
                                     foundString = new StringBuilder(
                                             foundString.subSequence(0, foundString.length() - delimiterLength).toString()
                                     );
                                     fileChannel.position(indexPosition).truncate(foundString.length());
-                                    fileChannel.write(ByteBuffer.wrap(updatable.getBytes(UTF_8)), indexPosition + 1);
-                                    fileChannel.force(true);
+                                    fileChannel.write(ByteBuffer.wrap(replaceable.getBytes(UTF_8)), indexPosition + 1);
                                     return true;
                                 }
                             }
@@ -91,5 +82,24 @@ public class KenjerFileWriterService {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public boolean append(File updatable, String insertable) {
+        try (FileWriter fileWriter = new FileWriter(updatable)) {
+            fileWriter.append(insertable);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean createFile(String path, boolean overwrite) throws IOException {
+        try (Writer fileWriter = new FileWriter(path, overwrite)) {}
+        return true;
+    }
+
+    public boolean createDirectory(String path) {
+        return new File(path).mkdirs();
     }
 }

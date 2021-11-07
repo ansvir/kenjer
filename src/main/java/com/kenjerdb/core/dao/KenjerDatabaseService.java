@@ -55,10 +55,10 @@ public class KenjerDatabaseService {
     }
 
     private String readRecord(int index) {
-        return new KenjerFileReaderService(DATABASE.getDatabase(), DATABASE).recordByIndex(index);
+        return new KenjerFileReaderService().recordByIndex(DATABASE.getDatabase(), DATABASE.getDelimiter(), index);
     }
 
     public boolean write(DatabaseFieldsType field, String record) {
-        return new KenjerFileWriterService(DATABASE.getDatabase(), DATABASE).updateByIndex(field.ordinal(), record);
+        return new KenjerFileWriterService().updateByIndex(DATABASE.getDatabase(), record, DATABASE.getDelimiter(), field.ordinal());
     }
 }
