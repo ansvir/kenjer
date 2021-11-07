@@ -1,12 +1,12 @@
 package com.kenjerdb.core.dao;
 
 import com.kenjerdb.core.dao.model.DatabaseFieldsType;
+import com.kenjerdb.core.dao.model.DatabaseRow;
 import com.kenjerdb.core.dao.model.PersistencePeriodType;
-import com.kenjerdb.core.exception.TableNotExistException;
-
-import java.util.List;
+import com.kenjerdb.core.util.Parser;
 
 import static com.kenjerdb.core.dao.model.DatabaseFieldsType.*;
+import static com.kenjerdb.core.util.Parser.parseIntToLong;
 
 public class KenjerDatabaseService {
 
@@ -16,46 +16,31 @@ public class KenjerDatabaseService {
         this.DATABASE = database;
     }
 
-    public List<String> readTables() {
-        return List.of(readRecord(TABLES.ordinal()).split(","));
-    }
-
-    public boolean isTableExist(String name) {
-        try {
-            readTables()
-                    .stream()
-                    .filter(it -> it.equals(name))
-                    .findAny()
-                    .orElseThrow(() -> new TableNotExistException(name));
-        } catch (TableNotExistException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
-    }
-
     public PersistencePeriodType readPersistencePeriod() {
         return PersistencePeriodType.valueOf(
-                        readRecord(PERSISTENCE_PERIOD.ordinal())
+                        readRecord(parseIntToLong(PERSISTENCE_PERIOD.ordinal())).getContent()
         );
     }
 
     public int readIndex() {
         return Integer.parseInt(
-                readRecord(INDEX.ordinal())
+                readRecord(parseIntToLong(INDEX.ordinal())).getContent()
         );
     }
 
     public String readPlaceholderStart() {
-        return readRecord(PLACEHOLDER_OPEN.ordinal());
+        return readRecord(parseIntToLong(PLACEHOLDER_OPEN.ordinal())).getContent();
     }
 
     public String readPlaceholderEnd() {
-        return readRecord(PLACEHOLDER_CLOSE.ordinal());
+        return readRecord(parseIntToLong(PLACEHOLDER_CLOSE.ordinal())).getContent();
     }
 
-    private String readRecord(int index) {
-        return new KenjerFileReaderService().recordByIndex(DATABASE.getDatabase(), DATABASE.getDelimiter(), index);
+    private DatabaseRow readRecord(Long index) {
+        return new DatabaseRow(
+                index,
+                new KenjerFileReaderService().recordByIndex(DATABASE.getDatabase(), DATABASE.getDelimiter(), index)
+        );
     }
 
     public boolean write(DatabaseFieldsType field, String record) {

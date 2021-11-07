@@ -37,7 +37,7 @@ public class FileReaderServiceTest {
                 new KenjerFileReaderService().recordByIndex(
                         new File(database.getRootDirectory() + "/tables/t_example.txt").getAbsoluteFile(),
                         database.getDelimiter(),
-                        4
+                        4L
                 )
         );
     }

@@ -49,6 +49,11 @@ public class KenjerDatabase implements FileDatabase {
      */
     private String placeholderEnd;
 
+    /**
+     * Pattern for the new inserted record
+     */
+    private String recordPattern;
+
     private KenjerDatabase(
             String name,
             String rootDirectory,
@@ -63,7 +68,7 @@ public class KenjerDatabase implements FileDatabase {
         KenjerFileWriterService fileWriterService = new KenjerFileWriterService();
         try {
             fileWriterService.createDirectory(this.rootDirectory);
-            fileWriterService.createFile(database.getAbsolutePath(), true);
+            fileWriterService.createFile(database.getAbsolutePath(), this.delimiter, true);
         } catch (IOException e) {
             throw new DatabaseCreationException("Database file cannot be created");
         }
@@ -72,8 +77,6 @@ public class KenjerDatabase implements FileDatabase {
         this.placeholderStart = placeholderStart;
         this.placeholderEnd = placeholderEnd;
         KenjerDatabaseService service = new KenjerDatabaseService(this);
-        fileWriterService.append(this.database, this.delimiter);
-        service.write(TABLES, "");
         service.write(PERSISTENCE_PERIOD, period.name());
         service.write(INDEX, String.valueOf(0));
         service.write(DELIMITER, encryptDelimiter(this.delimiter));
