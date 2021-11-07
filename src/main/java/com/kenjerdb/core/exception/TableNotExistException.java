@@ -1,7 +1,7 @@
 package com.kenjerdb.core.exception;
 
 public class TableNotExistException extends Throwable {
-    public TableNotExistException() {
-        super("Queried table doesn't exist");
+    public TableNotExistException(String table) {
+        super("Queried table '" + table + "' doesn't exist");
     }
 }

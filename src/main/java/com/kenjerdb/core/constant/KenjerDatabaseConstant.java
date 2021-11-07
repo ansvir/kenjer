@@ -1,17 +1,19 @@
 package com.kenjerdb.core.constant;
 
-public enum KenjerConstant {
+public enum KenjerDatabaseConstant {
 
-    PROJECT_NAME("kenjdb"),
+    PROJECT_NAME("kenjerdb"), // and root of db path
     TABLES_PATH("tables"),
     EXT(".txt"),
+    CIPHER_SIGN("1"),
+    CONFIG_FILE_NAME("config"),
     DEFAULT_RECORD_DELIMITER("[-||-]"),
     DEFAULT_PLACEHOLDER_DELIMITER_OPEN("<{"),
     DEFAULT_PLACEHOLDER_DELIMITER_CLOSE("}>");
 
     private String value;
 
-    KenjerConstant(String value) {
+    KenjerDatabaseConstant(String value) {
         this.value = value;
     }
 

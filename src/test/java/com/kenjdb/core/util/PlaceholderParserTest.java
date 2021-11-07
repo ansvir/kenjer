@@ -1,11 +1,10 @@
 package com.kenjdb.core.util;
 
-import com.kenjerdb.core.constant.KenjerConstant;
 import com.kenjerdb.core.util.PlaceholderParser;
 import org.junit.jupiter.api.Test;
 
-import static com.kenjerdb.core.constant.KenjerConstant.DEFAULT_PLACEHOLDER_DELIMITER_CLOSE;
-import static com.kenjerdb.core.constant.KenjerConstant.DEFAULT_PLACEHOLDER_DELIMITER_OPEN;
+import static com.kenjerdb.core.constant.KenjerDatabaseConstant.DEFAULT_PLACEHOLDER_DELIMITER_CLOSE;
+import static com.kenjerdb.core.constant.KenjerDatabaseConstant.DEFAULT_PLACEHOLDER_DELIMITER_OPEN;
 
 public class PlaceholderParserTest {
 

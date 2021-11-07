@@ -1,43 +1,37 @@
-package com.kenjerdb.core.parser.writer;
+package com.kenjerdb.core.dao;
 
 import com.kenjerdb.core.exception.FileCorruptedException;
 import com.kenjerdb.core.exception.IndexIncorrectException;
-import com.kenjerdb.core.parser.reader.FileReaderService;
 
-import javax.print.DocFlavor;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
-import static com.kenjerdb.core.constant.KenjerConstant.DEFAULT_RECORD_DELIMITER;
+import static com.kenjerdb.core.constant.KenjerDatabaseConstant.CIPHER_SIGN;
+import static com.kenjerdb.core.dao.model.DatabaseFieldsType.DELIMITER;
 import static com.kenjerdb.core.util.ArrayOperation.shiftLeft;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.nio.file.StandardOpenOption.READ;
-import static java.nio.file.StandardOpenOption.WRITE;
 
-public class FileWriterService {
+public class KenjerFileWriterService {
 
-    private final File INSERTABLE;
+    private final File UPDATABLE;
+    private final KenjerDatabase DATABASE;
 
-    private final File DATABASE;
-
-    public FileWriterService(File database, File insertable) {
+    public KenjerFileWriterService(File updatable, KenjerDatabase database) {
+        this.UPDATABLE = updatable;
         this.DATABASE = database;
-        this.INSERTABLE = insertable;
     }
 
-    /*
     public boolean updateByIndex(int index, String updatable) {
         StringBuilder foundString;
-
-        try (FileReader reader = new FileReader(INSERTABLE)) {
+        try (FileReader reader = new FileReader(UPDATABLE)) {
             int indexPosition = 0;
             int code;
-            String recordDelimiter = new FileReaderService()
+            String recordDelimiter = DATABASE.getDelimiter();
             int delimiterLength = recordDelimiter.length();
             char symbol;
             int indexCounter = 1;
-            if (INSERTABLE.length() < delimiterLength) {
+            if (UPDATABLE.length() < delimiterLength) {
                 throw new FileCorruptedException();
             }
 
@@ -53,25 +47,30 @@ public class FileWriterService {
                 indexPosition++;
 
                 shiftLeft(delimiterCharSeq, symbol);
-                StringBuilder stringBuilder = new StringBuilder();
+                StringBuilder delimiterStringStart = new StringBuilder();
                 for (char c : delimiterCharSeq) {
-                    stringBuilder.append(c);
+                    delimiterStringStart.append(c);
                 }
-                if (stringBuilder.toString().equals(recordDelimiter)) {
+                System.out.println(delimiterStringStart);
+                System.out.println(recordDelimiter);;
+                if (delimiterStringStart.toString().equals(recordDelimiter)) {
+                    System.out.println("ENTER2");
                     if (indexCounter++ == index) {
                         foundString = new StringBuilder();
                         do {
+                            System.out.println("ENTER3");
                             code = reader.read();
                             symbol = (char) code;
                             foundString.append(symbol);
                             shiftLeft(delimiterCharSeq, symbol);
-                            StringBuilder delimiterString = new StringBuilder();
+                            StringBuilder delimiterStringEnd = new StringBuilder();
                             for (char c : delimiterCharSeq) {
-                                delimiterString.append(c);
+                                delimiterStringEnd.append(c);
                             }
-                            if (delimiterString.toString().equals(recordDelimiter)) {
-                                System.out.println("ENTER");
-                                try(RandomAccessFile raf = new RandomAccessFile(INSERTABLE, "rw");
+                            System.out.println(foundString);
+                            if (delimiterStringEnd.toString().equals(recordDelimiter)) {
+                                System.out.println("ENTER4");
+                                try(RandomAccessFile raf = new RandomAccessFile(UPDATABLE, "rw");
                                     FileChannel fileChannel = raf.getChannel()
                                 ) {
                                     foundString = new StringBuilder(
@@ -93,5 +92,4 @@ public class FileWriterService {
             return false;
         }
     }
-    */
 }

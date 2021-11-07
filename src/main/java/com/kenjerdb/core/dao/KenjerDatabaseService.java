@@ -1,50 +1,64 @@
 package com.kenjerdb.core.dao;
 
+import com.kenjerdb.core.dao.model.DatabaseFieldsType;
+import com.kenjerdb.core.dao.model.PersistencePeriodType;
 import com.kenjerdb.core.exception.TableNotExistException;
-import com.kenjerdb.core.parser.reader.FileReaderService;
 
-import java.io.File;
 import java.util.List;
 
-import static com.kenjerdb.core.parser.DatabaseFieldsType.*;
+import static com.kenjerdb.core.dao.model.DatabaseFieldsType.*;
 
 public class KenjerDatabaseService {
 
-    private File database;
+    private final KenjerDatabase DATABASE;
 
-    public KenjerDatabaseService(File database) {
-        this.database = database;
+    public KenjerDatabaseService(KenjerDatabase database) {
+        this.DATABASE = database;
     }
 
     public List<String> readTables() {
-        return List.of(new FileReaderService(database).recordByIndex(TABLES.ordinal()).split(","));
+        return List.of(readRecord(TABLES.ordinal()).split(","));
     }
 
-    public String readTableByName(String name) {
+    public boolean isTableExist(String name) {
         try {
-            return readTables()
+            readTables()
                     .stream()
                     .filter(it -> it.equals(name))
-                    .findFirst()
-                    .orElseThrow(TableNotExistException::new);
+                    .findAny()
+                    .orElseThrow(() -> new TableNotExistException(name));
         } catch (TableNotExistException e) {
             e.printStackTrace();
-            return null;
+            return false;
         }
+        return true;
     }
 
     public PersistencePeriodType readPersistencePeriod() {
-        return PersistencePeriodType
-                .valueOf(new FileReaderService(database).recordByIndex(PERSISTENCE_PERIOD.ordinal()));
+        return PersistencePeriodType.valueOf(
+                        readRecord(PERSISTENCE_PERIOD.ordinal())
+        );
     }
 
     public int readIndex() {
         return Integer.parseInt(
-                new FileReaderService(database).recordByIndex(INDEX.ordinal())
+                readRecord(INDEX.ordinal())
         );
     }
 
-    public String readDelimiter() {
-        return new FileReaderService(database).recordByIndex(DELIMITER.ordinal());
+    public String readPlaceholderStart() {
+        return readRecord(PLACEHOLDER_OPEN.ordinal());
+    }
+
+    public String readPlaceholderEnd() {
+        return readRecord(PLACEHOLDER_CLOSE.ordinal());
+    }
+
+    private String readRecord(int index) {
+        return new KenjerFileReaderService(DATABASE.getDatabase(), DATABASE).recordByIndex(index);
+    }
+
+    public boolean write(DatabaseFieldsType field, String record) {
+        return new KenjerFileWriterService(DATABASE.getDatabase(), DATABASE).updateByIndex(field.ordinal(), record);
     }
 }

@@ -1,4 +1,4 @@
-package com.kenjerdb.core.dao;
+package com.kenjerdb.core.dao.model;
 
 class Column {
     private String name;

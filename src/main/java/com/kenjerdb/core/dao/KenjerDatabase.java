@@ -1,28 +1,51 @@
 package com.kenjerdb.core.dao;
 
-import com.kenjerdb.core.parser.writer.DatabaseFileRecordWriter;
+import com.kenjerdb.core.dao.model.DatabaseFieldsType;
+import com.kenjerdb.core.dao.model.PersistencePeriodType;
+import com.kenjerdb.core.exception.DatabaseCreationException;
 
 import java.io.File;
+import java.io.IOException;
 
-import static com.kenjerdb.core.constant.KenjerConstant.*;
-import static com.kenjerdb.core.dao.PersistencePeriodType.IMMEDIATE;
+import static com.kenjerdb.core.constant.KenjerDatabaseConstant.*;
+import static com.kenjerdb.core.dao.model.PersistencePeriodType.IMMEDIATE;
 
-public class KenjerDatabase {
+public class KenjerDatabase implements FileDatabase {
 
     /**
      * Database name
      */
     private String name;
 
+    /**
+     * Content of the database file
+     */
     private File database;
 
+    /**
+     * Root directory of the whole databaae
+     */
     private String rootDirectory;
 
+    /**
+     * Persistence period, see PersistencePeriodType
+     */
     private PersistencePeriodType period;
 
+    /**
+     * Delimiter of database units
+     */
     private String delimiter;
 
-    private String placeholder;
+    /**
+     * Placeholder start char sequence for database data. See DatabaseFieldsType
+     */
+    private String placeholderStart;
+
+    /**
+     * Placeholder end char sequence for database data. See DatabaseFieldsType
+     */
+    private String placeholderEnd;
 
     private KenjerDatabase(
             String name,
@@ -30,17 +53,34 @@ public class KenjerDatabase {
             PersistencePeriodType period,
             String delimiter,
             String placeholderStart,
-            String placeholderEnd) {
+            String placeholderEnd
+    ) throws DatabaseCreationException {
         this.name = name;
-        this.rootDirectory = rootDirectory + "/" + PROJECT_NAME.name() + "/" + name + "/";
-        this.database = new File(this.rootDirectory + name + EXT.name());
+        this.rootDirectory = rootDirectory + "/" + PROJECT_NAME.value() + "/" + name + "/";
+        this.database = new File(this.rootDirectory + name + EXT.value());
+        try {
+            if (!this.database.createNewFile()) {
+                throw new DatabaseCreationException("File wasn't created according to some reason");
+            }
+        } catch (IOException | DatabaseCreationException e) {
+            throw new DatabaseCreationException(e.getMessage());
+        }
         this.period = period;
         this.delimiter = delimiter;
-        DatabaseFileRecordWriter recordWriter = new DatabaseFileRecordWriter(database);
-//        recordWriter.write(period.name());
+        this.placeholderStart = placeholderStart;
+        this.placeholderEnd = placeholderEnd;
+        KenjerDatabaseService service = new KenjerDatabaseService(this);
+        service.write(DatabaseFieldsType.TABLES, "");
+        service.write(DatabaseFieldsType.PERSISTENCE_PERIOD, period.name());
+        service.write(DatabaseFieldsType.INDEX, String.valueOf(0));
+        service.write(DatabaseFieldsType.PLACEHOLDER_OPEN, placeholderStart);
+        service.write(DatabaseFieldsType.PLACEHOLDER_CLOSE, placeholderEnd);
     }
 
-    public static class Configurer {
+    protected KenjerDatabase() {
+    }
+
+    public static class Builder {
         private String name;
         private String rootDirectory;
         private PersistencePeriodType period;
@@ -48,41 +88,41 @@ public class KenjerDatabase {
         private String placeholderStart;
         private String placeholderEnd;
 
-        public Configurer() {}
+        public Builder() {}
 
-        public Configurer name(String name) {
+        public Builder name(String name) {
             this.name = name;
             return this;
         }
 
-        public Configurer directory(String directory) {
+        public Builder directory(String directory) {
             this.rootDirectory = directory;
             return this;
         }
 
-        public Configurer period(PersistencePeriodType period) {
+        public Builder period(PersistencePeriodType period) {
             this.period = period;
             return this;
         }
 
-        public Configurer delimiter(String delimiter) {
+        public Builder delimiter(String delimiter) {
             this.delimiter = delimiter;
             return this;
         }
 
-        public Configurer placeholderStart(String placeholderStart) {
+        public Builder placeholderStart(String placeholderStart) {
             this.placeholderStart = placeholderStart;
             return this;
         }
 
-        public Configurer placeholderEnd(String placeholderEnd) {
+        public Builder placeholderEnd(String placeholderEnd) {
             this.placeholderEnd = placeholderEnd;
             return this;
         }
 
-        public KenjerDatabase configure() {
+        public KenjerDatabase build() throws DatabaseCreationException {
             if (name == null) {
-                name = "database";
+                name = "example";
             }
 
             if (period == null) {
@@ -94,7 +134,7 @@ public class KenjerDatabase {
             }
 
             if (delimiter == null) {
-                delimiter = DEFAULT_RECORD_DELIMITER.name();
+                delimiter = DEFAULT_RECORD_DELIMITER.value();
             }
 
             if (placeholderStart == null) {
@@ -116,30 +156,51 @@ public class KenjerDatabase {
         }
     }
 
-    public static KenjerDatabase getDefault() {
-        return new Configurer()
+    public static KenjerDatabase getDefaultDatabase() throws DatabaseCreationException {
+        return getDefaultPreConfiguredDatabase()
+                .build();
+    }
+
+    public static Builder getDefaultPreConfiguredDatabase() {
+        return new Builder()
                 .name("example")
                 .period(IMMEDIATE)
                 .directory(System.getProperty("user.dir"))
                 .delimiter(DEFAULT_RECORD_DELIMITER.value())
                 .placeholderStart(DEFAULT_PLACEHOLDER_DELIMITER_OPEN.value())
-                .placeholderEnd(DEFAULT_PLACEHOLDER_DELIMITER_CLOSE.value())
-                .configure();
+                .placeholderEnd(DEFAULT_PLACEHOLDER_DELIMITER_CLOSE.value());
     }
 
-    protected String getName() {
+    @Override
+    public String getName() {
         return name;
     }
 
-    protected File getDatabase() {
+    @Override
+    public File getDatabase() {
         return database;
     }
 
-    protected String getRootDirectory() {
+    @Override
+    public String getRootDirectory() {
         return rootDirectory;
     }
 
-    protected PersistencePeriodType getPeriod() {
+    @Override
+    public PersistencePeriodType getPeriod() {
         return period;
+    }
+
+    @Override
+    public String getDelimiter() { return this.delimiter;}
+
+    @Override
+    public String getPlaceholderStart() {
+        return placeholderStart;
+    }
+
+    @Override
+    public String getPlaceholderEnd() {
+        return placeholderEnd;
     }
 }

@@ -1,4 +1,4 @@
-package com.kenjerdb.core.parser;
+package com.kenjerdb.core.dao.model;
 
 public enum DatabaseFieldsType {
     // WARNING: changing the order of constants will affect database generation
@@ -6,5 +6,6 @@ public enum DatabaseFieldsType {
     PERSISTENCE_PERIOD,
     INDEX,
     DELIMITER,
-    PLACEHOLDER
+    PLACEHOLDER_OPEN,
+    PLACEHOLDER_CLOSE
 }

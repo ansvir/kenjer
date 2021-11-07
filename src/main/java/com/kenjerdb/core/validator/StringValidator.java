@@ -1,7 +1,5 @@
 package com.kenjerdb.core.validator;
 
-import com.kenjerdb.core.dao.KenjerDatabase;
-
 public class StringValidator implements Validator<String>{
 
     private final String REGEX;

@@ -1,4 +1,4 @@
-package com.kenjerdb.core.parser;
+package com.kenjerdb.core.dao.model;
 
 public enum TableColumnsType {
     // WARNING: changing the order of constants will affect table generation
